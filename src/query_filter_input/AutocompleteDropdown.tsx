@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, ChangeEvent, KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
+import { scrollIntoView } from '../utils';
 
 interface AutocompleteDropdownProps {
   inputValue: string;
@@ -24,6 +25,7 @@ const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const spanRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -38,16 +40,26 @@ const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (spanRef.current) {
+      const spanWidth = spanRef.current.offsetWidth;
+      if (inputRef.current) {
+        inputRef.current.style.width = `${spanWidth + 15}px`;
+      }
+    }
+  }, [inputValue, inputRef]);
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setInputValue(value);
-    // setFilteredOptions(options.filter(option => option.toLowerCase().includes(value.toLowerCase())));
     setShowDropdown(true);
     setHighlightedIndex(0);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    // console.log('handleKeyDown')
+    const highlightedItem = document.querySelector('.dropdown-item.highlighted');
+    const container = document.querySelector('.dropdown') as HTMLElement;
+
     const selectedOption = filteredOptions[highlightedIndex];
     if (event.key === 'Enter') {
       if (showDropdown) {
@@ -61,12 +73,13 @@ const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
     } else if (event.key === 'ArrowDown') {
       setShowDropdown(true);
       setHighlightedIndex((prevIndex) => (prevIndex + 1) % filteredOptions.length);
+      scrollIntoView(container, highlightedItem as HTMLElement);
     } else if (event.key === 'ArrowUp') {
       setHighlightedIndex((prevIndex) => (prevIndex - 1 + filteredOptions.length) % filteredOptions.length);
+      scrollIntoView(container, highlightedItem as HTMLElement);
     } else if (event.key === 'Escape') {
       setShowDropdown(false);
     } else if (event.key === 'Tab') {
-      console.log('tabby')
       if (showDropdown && !event.shiftKey) {
         if (selectedOption) {
           setInputValue(selectedOption);
@@ -92,9 +105,8 @@ const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
       setDropdownPosition({ top: rect.bottom + 8, left: rect.left });
     }
     setShowDropdown(true);
-  }
-  // const filteredOptions = options.filter(option => option.toLowerCase().includes(inputValue.toLowerCase()));
-  // console.log('filteredOptions',filteredOptions)
+  };
+
   const filteredOptions = useMemo(() => {
     if (searchable) {
       return options.filter(option => option.toLowerCase().includes(inputValue.toLowerCase()));
@@ -102,7 +114,7 @@ const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
       return options;
     }
   }, [options, inputValue, searchable]);
-  
+
   return (
     <div className="autocomplete-dropdown">
       <input
@@ -114,12 +126,20 @@ const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
         onBlur={() => setShowDropdown(false)}
         onKeyDown={handleKeyDown}
         ref={inputRef}
-        style={{
-          ...inputStyle,
-          width: `${inputValue.length * 10}px`,
-        }}
+        style={inputStyle}
       />
-      {showDropdown && filteredOptions?.length > 0 &&  createPortal(
+      <span
+        ref={spanRef}
+        style={{
+          position: 'absolute',
+          visibility: 'hidden',
+          whiteSpace: 'pre',
+          ...inputStyle,
+        }}
+      >
+        {inputValue}
+      </span>
+      {showDropdown && filteredOptions.length > 0 && createPortal(
         <div
           className="dropdown"
           ref={dropdownRef}

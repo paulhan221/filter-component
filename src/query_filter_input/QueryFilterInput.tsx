@@ -1,5 +1,6 @@
-import React, { useState, useRef, KeyboardEvent } from 'react';
+import React, { useEffect, useState, useRef, KeyboardEvent } from 'react';
 import { Query, QueryFilterInputProps, Operators } from '../types';
+import useKeyboardNavigation from './useKeyboardNavigation';
 import AutocompleteDropdown from './AutocompleteDropdown';
 import './styles.scss';
 
@@ -22,6 +23,8 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
   const columnInputRef = useRef<HTMLInputElement>(null);
   const operatorInputRef = useRef<HTMLInputElement>(null);
   const filterValueRef = useRef<HTMLInputElement>(null);
+  const queryRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const handleColumnSelect = (column: string) => {
     setSelectedColumn(column);
@@ -52,7 +55,8 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
   };
 
   const handleFilterValueSelect = (value: string) => {
-    setFilterValue(value.toLowerCase());
+    setFilterValue(value);
+    addQuery()
   }
 
   const handleFilterValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +80,15 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
     const updatedQueries = queries.filter((_, i) => i !== index);
     setQueries(updatedQueries);
     onQueryChange(updatedQueries);
+
+    setTimeout(() => {
+      const queryIndex = Math.min(index, queries.length - 1);
+      if (queryRefs.current[queryIndex]) {
+        queryRefs.current[queryIndex]?.focus();
+      } else {
+        columnInputRef.current?.focus();
+      }
+    }, 50);
   };
 
   const handleValueKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -84,18 +97,41 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
     }
   };
 
+  useKeyboardNavigation({
+    queries,
+    removeQuery,
+    inputRefs: [columnInputRef, operatorInputRef, filterValueRef],
+    queryRefs: queryRefs.current,
+    buttonRefs: buttonRefs.current,
+  });
+
+  useEffect(() => {
+    queryRefs.current = queryRefs.current.slice(0, queries.length);
+  }, [queries]);
+
   const selectedColumnType = columns.find(column => column.name === selectedColumn)?.type || 'string';
   const operatorOptions = operators[selectedColumnType];
 
-  console.log('selectedColumnType',selectedColumnType)
-  console.log('operatorOptions',operatorOptions)
   return (
     <div className="multi-select-container">
       <div className="chips">
         {queries.map((query, index) => (
-          <div key={index} className="tag">
+          <div
+            key={index}
+            className="chip"
+            ref={(el) => (queryRefs.current[index] = el)}
+            tabIndex={0}
+            data-type="query"
+            data-query-index={index}
+          >
             <span>{`${query.column} ${query.operator} ${query.value}`}</span>
-            <button className="close-btn"  onClick={() => removeQuery(index)}>x</button>
+            <button 
+              ref={(el) => (buttonRefs.current[index] = el)}
+              className="remove-btn"
+              onClick={() => removeQuery(index)}
+              data-type="remove"
+              data-query-index={index}
+            >&times;</button>
           </div>
         ))}
       </div>
@@ -105,6 +141,7 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
         inputRef={columnInputRef}
         options={columns.map(column => column.name)}
         onSelect={handleColumnSelect}
+        data-type="field"
       />
       {selectedColumn && (
         <AutocompleteDropdown
@@ -114,7 +151,7 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
           inputRef={operatorInputRef}
           options={operatorOptions}
           onSelect={handleOperatorSelect}
-          inputStyle={{ width: '20px'}}
+          data-type="field"
         />
       )}
       {operator && selectedColumn && (
@@ -127,6 +164,7 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
             options={['True', 'False']}
             onSelect={handleFilterValueSelect}
             inputStyle={{ width: '30px'}}
+            data-type="field"
           />
         ) :
         <input
@@ -137,6 +175,7 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
           onChange={handleFilterValueChange}
           onKeyDown={handleValueKeyDown}
           placeholder="Enter value"
+          data-type="field"
         />
       )}
       

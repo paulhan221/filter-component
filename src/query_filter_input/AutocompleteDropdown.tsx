@@ -50,8 +50,10 @@ const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
   }, [inputValue, inputRef]);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setInputValue(value);
+    if (searchable) {
+      const value = event.target.value;
+      setInputValue(value);
+    }
     setShowDropdown(true);
     setHighlightedIndex(0);
   };
@@ -93,9 +95,9 @@ const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
   };
 
   const handleOptionSelect = (option: string) => {
+    onSelect(option);
     setInputValue(option);
     setShowDropdown(false);
-    onSelect(option);
     setHighlightedIndex(0);
   };
 

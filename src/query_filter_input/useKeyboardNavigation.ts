@@ -27,13 +27,11 @@ const useKeyboardNavigation = ({
       const currentIndex = allRefs.findIndex(ref => ref === activeElement);
       
       if (event.key === 'ArrowRight') {
-        console.log('currentIndex',currentIndex)
         if (currentIndex !== -1) {
           const input = inputRefs.find(ref => ref.current === activeElement)?.current;
 
           if (input && input.selectionEnd !== input.value.length) return;
           const nextRef = allRefs[currentIndex + 1] || allRefs[0];
-          console.log('nextRef',nextRef)
           nextRef?.focus();
           event.preventDefault();
         }

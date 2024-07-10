@@ -32,6 +32,7 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
     const operator = operators[selectedColumnType][0]
     setOperator(operator);
     setOperatorInputValue(operator);
+    setFilterValue('');
     setTimeout(() => {
       operatorInputRef.current?.focus();
     }, 50);
@@ -44,7 +45,6 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
 
     setSelectedColumn('');
     setOperator('');
-    setFilterValue('');
   };
 
   const handleOperatorSelect = (operator: string) => {
@@ -56,23 +56,35 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
 
   const handleFilterValueSelect = (value: string) => {
     setFilterValue(value);
-    addQuery()
-  }
+    addQuery({
+      column: selectedColumn,
+      operator,
+      value: value,
+    });
+  };
 
   const handleFilterValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilterValue(event.target.value);
   };
 
-  const addQuery = () => {
-    if (selectedColumn && operator && filterValue) {
-      const newQuery: Query = { column: selectedColumn, operator, value: filterValue };
+  const addQuery = ({
+    column,
+    operator,
+    value,
+  }: {
+    column: string;
+    operator: string;
+    value: string;
+  }) => {
+    if (column && operator && value) {
+      const newQuery: Query = { column, operator, value };
       const newQueries = [...queries, newQuery];
       setQueries(newQueries);
       onQueryChange(newQueries);
       resetForm();
       setTimeout(() => {
         columnInputRef.current?.focus();
-      }, 50)
+      }, 10)
     }
   };
 
@@ -82,18 +94,22 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
     onQueryChange(updatedQueries);
 
     setTimeout(() => {
-      const queryIndex = Math.min(index, queries.length - 1);
+      const queryIndex = queries.length - 2;
       if (queryRefs.current[queryIndex]) {
         queryRefs.current[queryIndex]?.focus();
       } else {
         columnInputRef.current?.focus();
       }
-    }, 50);
+    }, 10);
   };
 
   const handleValueKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      addQuery();
+      addQuery({
+        column: selectedColumn,
+        operator,
+        value: filterValue,
+      });
     }
   };
 
@@ -156,16 +172,18 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
       )}
       {operator && selectedColumn && (
         selectedColumnType === 'boolean' ? (
-          <AutocompleteDropdown
-            searchable={false}
-            inputValue={filterValue}
-            setInputValue={setFilterValue}
-            inputRef={filterValueRef}
-            options={['True', 'False']}
-            onSelect={handleFilterValueSelect}
-            inputStyle={{ width: '30px'}}
-            data-type="field"
-          />
+          <>
+            <AutocompleteDropdown
+              searchable={false}
+              inputValue={filterValue}
+              setInputValue={setFilterValue}
+              inputRef={filterValueRef}
+              options={['True', 'False']}
+              onSelect={handleFilterValueSelect}
+              inputStyle={{ width: '30px'}}
+              data-type="field"
+            />
+          </>
         ) :
         <input
           className="multi-select-input"

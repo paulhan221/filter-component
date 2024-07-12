@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, RefObject } from 'react';
 import { Query } from '../types';
 
 interface UseKeyboardNavigationProps {
   queries: Query[];
   removeQuery: (index: number) => void;
-  inputRefs: React.RefObject<HTMLInputElement>[];
+  inputRefs: RefObject<HTMLInputElement>[];
   queryRefs: (HTMLDivElement | null)[];
   buttonRefs: (HTMLButtonElement | null)[];
 }

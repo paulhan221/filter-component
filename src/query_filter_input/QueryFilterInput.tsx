@@ -1,5 +1,13 @@
-import React, { useEffect, useState, useRef, KeyboardEvent } from 'react';
-import { Query, QueryFilterInputProps, Operators } from '../types';
+import {
+  useEffect,
+  useState,
+  useRef,
+  FC,
+  ChangeEvent,
+  KeyboardEvent,
+} from 'react';
+import { Query,
+  QueryFilterInputProps, Operators } from '../types';
 import useKeyboardNavigation from './useKeyboardNavigation';
 import AutocompleteDropdown from './AutocompleteDropdown';
 import './styles.scss';
@@ -11,7 +19,7 @@ const operators: Operators = {
   date: ['=', '!=', 'before', 'after'],
 };
 
-const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryChange }) => {
+const QueryFilterInput: FC<QueryFilterInputProps> = ({ columns, onQueryChange }) => {
   const [columnInputValue, setColumnInputValue] = useState<string>('');
   const [operatorInputValue, setOperatorInputValue] = useState<string>('');
   const [filterValue, setFilterValue] = useState<string>('');
@@ -63,7 +71,7 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
     });
   };
 
-  const handleFilterValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterValueChange = (event: ChangeEvent<HTMLInputElement>) => {
     setFilterValue(event.target.value);
   };
 
@@ -172,18 +180,16 @@ const QueryFilterInput: React.FC<QueryFilterInputProps> = ({ columns, onQueryCha
       )}
       {operator && selectedColumn && (
         selectedColumnType === 'boolean' ? (
-          <>
-            <AutocompleteDropdown
-              searchable={false}
-              inputValue={filterValue}
-              setInputValue={setFilterValue}
-              inputRef={filterValueRef}
-              options={['True', 'False']}
-              onSelect={handleFilterValueSelect}
-              inputStyle={{ width: '30px'}}
-              data-type="field"
-            />
-          </>
+          <AutocompleteDropdown
+            searchable={false}
+            inputValue={filterValue}
+            setInputValue={setFilterValue}
+            inputRef={filterValueRef}
+            options={['True', 'False']}
+            onSelect={handleFilterValueSelect}
+            inputStyle={{ width: '30px'}}
+            data-type="field"
+          />
         ) :
         <input
           className="multi-select-input"

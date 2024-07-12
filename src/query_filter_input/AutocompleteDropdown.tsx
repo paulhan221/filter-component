@@ -1,18 +1,28 @@
-import React, { useState, useEffect, useRef, useMemo, ChangeEvent, KeyboardEvent } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  FC,
+  RefObject,
+  CSSProperties,
+  ChangeEvent,
+  KeyboardEvent,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { scrollIntoView } from '../utils';
 
 interface AutocompleteDropdownProps {
   inputValue: string;
   setInputValue: (value: string) => void;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement>;
   options: string[];
   onSelect: (value: string) => void;
-  inputStyle?: React.CSSProperties;
+  inputStyle?: CSSProperties;
   searchable?: boolean;
 }
 
-const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
+const AutocompleteDropdown: FC<AutocompleteDropdownProps> = ({
   searchable = true,
   inputValue,
   setInputValue,

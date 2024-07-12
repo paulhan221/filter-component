@@ -22,6 +22,6 @@ export function scrollIntoView(
   }
 }
 
-export function scrollTo(el: HTMLElement, top: number): void {
+function scrollTo(el: HTMLElement, top: number): void {
   el.scrollTop = top;
 }

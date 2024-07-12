@@ -36,13 +36,11 @@ const useKeyboardNavigation = ({
           event.preventDefault();
         }
       } else if (event.key === 'ArrowLeft') {
-        if (currentIndex > 0) {
-          const input = inputRefs.find(ref => ref.current === activeElement)?.current;
-          if (input && input.selectionStart !== 0) return;
-          const nextRef = allRefs[currentIndex - 1] || allRefs[allRefs.length - 1];
-          nextRef?.focus();
-          event.preventDefault();
-        }
+        const input = inputRefs.find(ref => ref.current === activeElement)?.current;
+        if (input && input.selectionStart !== 0) return;
+        const nextRef = allRefs[currentIndex - 1] || allRefs[allRefs.length - 1];
+        nextRef?.focus();
+        event.preventDefault();
       } else if (event.key === 'Backspace' && activeElement.dataset.queryIndex) {
         removeQuery(Number(activeElement.dataset.queryIndex));
         event.preventDefault();
